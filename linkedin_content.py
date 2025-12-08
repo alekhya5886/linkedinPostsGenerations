@@ -4,26 +4,23 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
 
-# Load secrets
-API_KEY = os.getenv("GEMINI_API_KEY")
+API_KEY = os.getenv("GOOGLE_API_KEY")
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 RECEIVER_EMAIL = os.getenv("RECEIVER_EMAIL")
 
-# Configure Gemini
 genai.configure(api_key=API_KEY)
 
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 prompt = """
-Give me an engaging, interesting technology topic and a LinkedIn post
-in 150 words with catchy emojis and provide related image links.
+Give me an engaging technology topic and a LinkedIn post in 150 words 
+with catchy emojis and image links.
 """
 
 response = model.generate_content(prompt)
 content = response.text
 
-# --- Sending Email ---
 msg = MIMEMultipart()
 msg["From"] = SENDER_EMAIL
 msg["To"] = RECEIVER_EMAIL
