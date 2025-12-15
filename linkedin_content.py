@@ -1,55 +1,53 @@
 import os
+import google.generativeai as genai
 import smtplib
 from email.mime.text import MIMEText
-import google.generativeai as genai
 
-# ---------------- CONFIG ----------------
+# 1. Configure Gemini (IMPORTANT)
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
-SENDER_EMAIL = os.environ["SENDER_EMAIL"]
-EMAIL_PASSWORD = os.environ["EMAIL_PASSWORD"]
-RECEIVER_EMAIL = os.environ["RECEIVER_EMAIL"]
+# 2. Load memory
+memory_file = "memory.txt"
+used_topics = set()
 
-MEMORY_FILE = "memory.txt"
+if os.path.exists(memory_file):
+    with open(memory_file, "r") as f:
+        used_topics = set(f.read().splitlines())
 
-# ---------------- MEMORY ----------------
-used_topics = ""
-if os.path.exists(MEMORY_FILE):
-    with open(MEMORY_FILE, "r") as f:
-        used_topics = f.read()
-
-# ---------------- GEMINI (FIXED MODEL) ----------------
-model = genai.GenerativeModel("models/gemini-pro")
-
+# 3. Prompt
 prompt = f"""
-Generate a UNIQUE LinkedIn post on a technology topic.
+Generate a NEW LinkedIn tech post topic not in this list:
+{list(used_topics)}
 
-Rules:
+Requirements:
 - 150 words
 - Catchy emojis
-- Include 2–3 image links
-- Start with a TITLE in the first line
-- DO NOT repeat topics from below:
-
-{used_topics}
+- Include 2 image links
+- Emerging technology topic
 """
 
+# 4. Model (THIS IS THE KEY FIX)
+model = genai.GenerativeModel("gemini-1.5-flash")
 response = model.generate_content(prompt)
+
 content = response.text
 
-# ---------------- SAVE MEMORY ----------------
-topic = content.split("\n")[0].strip()
-with open(MEMORY_FILE, "a") as f:
-    f.write(topic + "\n")
+# 5. Save topic to memory
+first_line = content.split("\n")[0]
+with open(memory_file, "a") as f:
+    f.write(first_line + "\n")
 
-# ---------------- EMAIL ----------------
+# 6. Send email
 msg = MIMEText(content)
-msg["Subject"] = "LinkedIn Content Idea 🚀"
-msg["From"] = SENDER_EMAIL
-msg["To"] = RECEIVER_EMAIL
+msg["Subject"] = "LinkedIn Post Content"
+msg["From"] = os.environ["SENDER_EMAIL"]
+msg["To"] = os.environ["RECEIVER_EMAIL"]
 
 with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-    server.login(SENDER_EMAIL, EMAIL_PASSWORD)
+    server.login(
+        os.environ["SENDER_EMAIL"],
+        os.environ["EMAIL_PASSWORD"]
+    )
     server.send_message(msg)
 
-print("✅ Email sent successfully")
+print("✅ Email sent successfully!")
