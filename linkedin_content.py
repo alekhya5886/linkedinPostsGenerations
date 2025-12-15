@@ -22,7 +22,26 @@ if os.path.exists(MEMORY_FILE):
 # 3. Prompt
 # -------------------------------
 prompt = f"""
-Generate a UNIQUE and engaging LinkedIn post on technology.
+You are a professional tech content writer and social media strategist. 
+
+Write a 150–200 word engaging LinkedIn post about a trending tech topic. The content can be related to software, hardware, or interesting “Did you know?” tech facts. Make sure the post is:
+
+1. Friendly, professional, and easy to read.
+2. Starts with a hook that grabs attention.
+3. Includes informative details or examples.
+4. Ends with a subtle call-to-action (like inviting comments or shares).
+
+After the post, provide 3 related image ideas that can be used to visualize the content. Format the image suggestions as short, descriptive phrases suitable for AI image generation (e.g., “A futuristic AI-powered robot in an office”).
+
+Output format:
+
+Post: [Your 150–200 word content here]
+
+Image Ideas:
+1. …
+2. …
+3. …
+
 
 Avoid repeating these topics:
 {list(used_topics)}
