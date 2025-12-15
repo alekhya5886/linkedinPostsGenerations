@@ -39,11 +39,8 @@ Requirements:
 # 4. Generate content
 # -------------------------------
 response = client.chat.completions.create(
-    model="llama-3.1-70b-versatile",
-    messages=[
-        {"role": "user", "content": prompt}
-    ],
-    temperature=0.8,
+    model="llama-3.3-70b-versatile",  # updated model
+    messages=[{"role": "user", "content": "Write a LinkedIn post about AI"}]
 )
 
 
