@@ -6,17 +6,17 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-script:
+  generate-post:
     runs-on: ubuntu-latest
 
     env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
       EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
       RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
-      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -26,7 +26,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install google-genai
+          pip install groq
 
-      - name: Run script
+      - name: Run LinkedIn content generator
         run: python linkedin_content.py
