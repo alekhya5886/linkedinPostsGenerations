@@ -1,35 +1,54 @@
-import google.generativeai as genai
 import os
 import smtplib
 from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import google.generativeai as genai
 
-API_KEY = os.getenv("GOOGLE_API_KEY")
-genai.configure(api_key=API_KEY)
+# ---------------- CONFIG ----------------
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
-model = genai.GenerativeModel("gemini-1.5-flash-latest")
+SENDER_EMAIL = os.environ["SENDER_EMAIL"]
+EMAIL_PASSWORD = os.environ["EMAIL_PASSWORD"]
+RECEIVER_EMAIL = os.environ["RECEIVER_EMAIL"]
 
-prompt = """
-Give me an engaging trending technology topic and a 150-word LinkedIn post 
-with emojis and image links.
+MEMORY_FILE = "memory.txt"
+
+# ---------------- MEMORY ----------------
+if os.path.exists(MEMORY_FILE):
+    with open(MEMORY_FILE, "r") as f:
+        used_topics = f.read()
+else:
+    used_topics = ""
+
+# ---------------- GEMINI ----------------
+model = genai.GenerativeModel("gemini-1.0-pro")
+
+prompt = f"""
+Generate a unique and engaging LinkedIn post on a technology topic.
+- 150 words
+- Catchy emojis
+- Include image links
+- DO NOT repeat topics from this list:
+{used_topics}
+Start with a clear title in the first line.
 """
 
 response = model.generate_content(prompt)
 content = response.text
 
-sender = os.getenv("SENDER_EMAIL")
-password = os.getenv("EMAIL_PASSWORD")
-receiver = os.getenv("RECEIVER_EMAIL")
+# ---------------- SAVE MEMORY ----------------
+topic = content.split("\n")[0].strip()
 
-msg = MIMEMultipart()
-msg["From"] = sender
-msg["To"] = receiver
-msg["Subject"] = "Today's LinkedIn Post ✨"
+with open(MEMORY_FILE, "a") as f:
+    f.write(topic + "\n")
 
-msg.attach(MIMEText(content, "plain"))
+# ---------------- EMAIL ----------------
+msg = MIMEText(content)
+msg["Subject"] = "LinkedIn Content Idea 🚀"
+msg["From"] = SENDER_EMAIL
+msg["To"] = RECEIVER_EMAIL
 
 with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-    server.login(sender, password)
-    server.sendmail(sender, receiver, msg.as_string())
+    server.login(SENDER_EMAIL, EMAIL_PASSWORD)
+    server.send_message(msg)
 
-print("Email sent successfully!")
+print("✅ Email sent successfully")
